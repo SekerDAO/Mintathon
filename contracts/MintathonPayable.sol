@@ -12,15 +12,31 @@ contract Mintathon001 is ERC721URIStorage, Ownable {
     Counters.Counter private _tokenIds;
     string IMGURL = "https://sekerfactory.mypinata.cloud/ipfs/QmedVqgziYhAbYES7n2kmRGJK91JZk2QXb2CYYkso4T1kb";
     bool public canMint = true;
+    uint256 public maxFreeMints = 3;
+    uint256 public price = 0.01 ether;
+    mapping(address => uint256) public minted;
 
     constructor() ERC721("Seker Factory DAO Mintathon 001", "SFD Mintathon 001") {}
 
     function mint() public payable {
         require(canMint, "Mintathon 001: Mintathon is over");
 
+        if(minted[msg.sender] >= maxFreeMints) {
+            require(msg.value == price, "Incorrect eth amount");
+        }
+
+        minted[msg.sender]++;
         uint256 newNFT = _tokenIds.current();
         _safeMint(msg.sender, newNFT);
         _tokenIds.increment();
+    }
+
+    function updatePrice(uint256 _newPrice) public onlyOwner {
+        price = _newPrice;
+    }
+
+    function updateMaxFreeMints(uint256 _newMax) public onlyOwner {
+        maxFreeMints = _newMax;
     }
 
     function updateTokenURI(string memory _newURI) public onlyOwner {
@@ -74,5 +90,20 @@ contract Mintathon001 is ERC721URIStorage, Ownable {
                     )
                 )
             );
+    }
+
+    // Withdraw
+    function withdraw(address payable withdrawAddress)
+        external
+        payable
+        onlyOwner
+    {
+        require(
+            withdrawAddress != address(0),
+            "Withdraw address cannot be zero"
+        );
+        require(address(this).balance >= 0, "Not enough eth");
+        (bool sent, ) = withdrawAddress.call{value: address(this).balance}("");
+        require(sent, "Failed to send Ether");
     }
 }

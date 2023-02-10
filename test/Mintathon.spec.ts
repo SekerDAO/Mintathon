@@ -10,11 +10,11 @@ const etherValue = ethers.utils.parseEther("0.01");
 const etherValueLow = ethers.utils.parseEther("0.009");
 const etherValueHigh = ethers.utils.parseEther("0.011");
 
-describe("Mintathon001", async () => {
+describe("MintathonPayable", async () => {
   const baseSetup = deployments.createFixture(async () => {
     await deployments.fixture();
 
-    const Mintathon001 = await hre.ethers.getContractFactory("Mintathon001");
+    const Mintathon001 = await hre.ethers.getContractFactory("MintathonPayable");
     const mintathon = await Mintathon001.deploy();
 
     return { Mintathon001, mintathon };
