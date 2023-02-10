@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "base64-sol/base64.sol";
 
-contract Mintathon001 is ERC721URIStorage, Ownable {
+contract MintathonPayable is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     string IMGURL = "https://sekerfactory.mypinata.cloud/ipfs/QmedVqgziYhAbYES7n2kmRGJK91JZk2QXb2CYYkso4T1kb";
@@ -57,14 +57,14 @@ contract Mintathon001 is ERC721URIStorage, Ownable {
             _exists(tokenId),
             "Mintathon 001: URI query for nonexistent token"
         );
-        return generateCardURI(tokenId);
+        return generateURI(tokenId);
     }
 
     function totalSupply() public view returns (uint256) {
         return _tokenIds.current();
     }
 
-    function generateCardURI(uint256 _id) public view returns (string memory) {
+    function generateURI(uint256 _id) public view returns (string memory) {
         return
             string(
                 abi.encodePacked(

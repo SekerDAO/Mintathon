@@ -41,14 +41,14 @@ contract Mintathon001 is ERC721URIStorage, Ownable {
             _exists(tokenId),
             "Mintathon 001: URI query for nonexistent token"
         );
-        return generateCardURI(tokenId);
+        return generateURI(tokenId);
     }
 
     function totalSupply() public view returns (uint256) {
         return _tokenIds.current();
     }
 
-    function generateCardURI(uint256 _id) public view returns (string memory) {
+    function generateURI(uint256 _id) public view returns (string memory) {
         return
             string(
                 abi.encodePacked(
