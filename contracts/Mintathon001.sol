@@ -10,19 +10,41 @@ import "base64-sol/base64.sol";
 contract Mintathon001 is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
-    string IMGURL = "https://sekerfactory.mypinata.cloud/ipfs/QmWBzhodf6DisQqxP86jwbLrJm1X95Ue5HGygoGKGfC36D";
-
+    string IMGURL = "https://sekerfactory.mypinata.cloud/ipfs/QmedVqgziYhAbYES7n2kmRGJK91JZk2QXb2CYYkso4T1kb";
+    bool public canMint = true;
+    uint256 public maxFreeMints = 3;
+    uint256 public price = 0.01 ether;
+    mapping(address => uint256) public minted;
 
     constructor() ERC721("Seker Factory DAO Mintathon 001", "SFD Mintathon 001") {}
 
-    function mint() public {
+    function mint() public payable {
+        require(canMint, "Mintathon 001: Mintathon is over");
+
+        if(minted[msg.sender] >= maxFreeMints) {
+            require(msg.value == price, "Incorrect eth amount");
+        }
+
+        minted[msg.sender]++;
         uint256 newNFT = _tokenIds.current();
         _safeMint(msg.sender, newNFT);
         _tokenIds.increment();
     }
 
+    function updatePrice(uint256 _newPrice) public onlyOwner {
+        price = _newPrice;
+    }
+
+    function updateMaxFreeMints(uint256 _newMax) public onlyOwner {
+        maxFreeMints = _newMax;
+    }
+
     function updateTokenURI(string memory _newURI) public onlyOwner {
         IMGURL = _newURI;
+    }
+
+    function toggleMintathon() public onlyOwner {
+        canMint = !canMint;
     }
 
     function tokenURI(uint256 tokenId)
@@ -51,7 +73,7 @@ contract Mintathon001 is ERC721URIStorage, Ownable {
                         bytes(
                             abi.encodePacked(
                                 '{"name":"Seker Factory DAO Mintathon 001",',
-                                '"description":"Commemorates the first Seker Factory DAO live stream on koop.xyz. This mint helped continue the stream and make history as the first ever mintathon in web3.",',
+                                '"description":"Commemorates the first Seker Factory DAO live stream on koop.xyz. This mint helped continue the stream and make history as the first ever streaming mintathon in web3.",',
                                 '"attributes": ',
                                 "[",
                                 '{"trait_type":"Mintathon 001 Supporter","value":"',
@@ -68,5 +90,20 @@ contract Mintathon001 is ERC721URIStorage, Ownable {
                     )
                 )
             );
+    }
+
+    // Withdraw
+    function withdraw(address payable withdrawAddress)
+        external
+        payable
+        onlyOwner
+    {
+        require(
+            withdrawAddress != address(0),
+            "Withdraw address cannot be zero"
+        );
+        require(address(this).balance >= 0, "Not enough eth");
+        (bool sent, ) = withdrawAddress.call{value: address(this).balance}("");
+        require(sent, "Failed to send Ether");
     }
 }
